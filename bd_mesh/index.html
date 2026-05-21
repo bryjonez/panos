@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
   <title>DJI Terra 3D Mesh Viewer</title>
 
@@ -14,15 +14,13 @@
   />
 
   <style>
-    html,
-    body,
-    #cesiumContainer {
+    html, body, #cesiumContainer {
       width: 100%;
       height: 100%;
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #000;
+      background: black;
       font-family: Arial, sans-serif;
     }
 
@@ -31,12 +29,13 @@
       top: 10px;
       left: 10px;
       z-index: 100;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.65);
       color: white;
       padding: 10px 14px;
       border-radius: 10px;
       font-size: 14px;
-      backdrop-filter: blur(6px);
+      line-height: 1.4;
+      backdrop-filter: blur(5px);
     }
 
     .info b {
@@ -57,13 +56,16 @@
 </div>
 
 <script>
+
 (async () => {
 
-  // ==========================
-  // CESIUM VIEWER SETUP
-  // ==========================
+  // ============================================
+  // CREATE VIEWER
+  // ============================================
 
   const viewer = new Cesium.Viewer("cesiumContainer", {
+
+    terrain: Cesium.Terrain.fromWorldTerrain(),
 
     animation: false,
     timeline: false,
@@ -74,133 +76,83 @@
     navigationHelpButton: false,
     fullscreenButton: true,
 
-    terrainProvider: await Cesium.createWorldTerrainAsync(),
-
-    selectionIndicator: false,
     infoBox: false,
+    selectionIndicator: false,
 
-    shouldAnimate: true
+    shadows: false
   });
 
-  // Better visual quality
+  // Better rendering quality
   viewer.scene.postProcessStages.fxaa.enabled = true;
   viewer.scene.globe.depthTestAgainstTerrain = true;
+  viewer.resolutionScale = window.devicePixelRatio;
 
-  // ==========================
-  // LOAD DJI TERRA TILESET
-  // ==========================
+  // ============================================
+  // LOAD TILESET
+  // ============================================
 
   const tileset = await Cesium.Cesium3DTileset.fromUrl("./tileset.json", {
 
     maximumScreenSpaceError: 1,
+
     dynamicScreenSpaceError: false,
 
     skipLevelOfDetail: false,
-    immediatelyLoadDesiredLevelOfDetail: true,
 
-    preloadWhenHidden: true,
-    preloadFlightDestinations: true,
+    immediatelyLoadDesiredLevelOfDetail: true,
 
     preferLeaves: true
   });
 
   viewer.scene.primitives.add(tileset);
 
+  // Wait until fully ready
   await tileset.readyPromise;
 
-  // ==========================
-  // AUTO ZOOM
-  // ==========================
+  // ============================================
+  // ZOOM TO MODEL
+  // ============================================
 
-  viewer.zoomTo(tileset);
+  await viewer.zoomTo(tileset);
 
-  // ==========================
+  // ============================================
   // OPTIONAL EDGE CLEANUP
-  // ==========================
+  // ============================================
   //
-  // These clipping planes hide messy
-  // reconstruction edges.
+  // SAFER METHOD:
+  // hide low-detail edge garbage
+  // without clipping away the model
   //
-  // Increase DISTANCE = keeps more mesh
-  // Decrease DISTANCE = trims more edges
-  //
-  // Set ENABLE_EDGE_TRIM to false
-  // to disable completely.
-  //
-  // ==========================
+  // ============================================
 
-  const ENABLE_EDGE_TRIM = true;
+  tileset.maximumScreenSpaceError = 0.5;
 
-  if (ENABLE_EDGE_TRIM) {
+  // ============================================
+  // OPTIONAL COLOR IMPROVEMENTS
+  // ============================================
 
-    const DISTANCE = 140;
+  tileset.colorBlendMode = Cesium.Cesium3DTileColorBlendMode.HIGHLIGHT;
 
-    tileset.clippingPlanes = new Cesium.ClippingPlaneCollection({
-
-      planes: [
-
-        // LEFT
-        new Cesium.ClippingPlane(
-          new Cesium.Cartesian3(1, 0, 0),
-          DISTANCE
-        ),
-
-        // RIGHT
-        new Cesium.ClippingPlane(
-          new Cesium.Cartesian3(-1, 0, 0),
-          DISTANCE
-        ),
-
-        // FRONT
-        new Cesium.ClippingPlane(
-          new Cesium.Cartesian3(0, 1, 0),
-          DISTANCE
-        ),
-
-        // BACK
-        new Cesium.ClippingPlane(
-          new Cesium.Cartesian3(0, -1, 0),
-          DISTANCE
-        )
-
-      ],
-
-      unionClippingRegions: true,
-
-      edgeWidth: 0
-    });
-  }
-
-  // ==========================
-  // HIGH QUALITY RENDERING
-  // ==========================
-
-  viewer.scene.screenSpaceCameraController.minimumZoomDistance = 1;
-
-  viewer.resolutionScale = window.devicePixelRatio;
-
-  // Sharper rendering
-  viewer.scene.highDynamicRange = true;
-
-  // ==========================
-  // OPTIONAL LIGHTING
-  // ==========================
+  // ============================================
+  // LIGHTING
+  // ============================================
 
   viewer.scene.light = new Cesium.DirectionalLight({
     direction: new Cesium.Cartesian3(
-      0.3,
+      0.2,
       -0.5,
       -1.0
     )
   });
 
-  // ==========================
-  // DEBUGGING
-  // ==========================
+  // ============================================
+  // DEBUG
+  // ============================================
 
-  console.log("3D Mesh Loaded Successfully");
+  console.log("DJI Terra mesh loaded.");
 
 })();
+
 </script>
 
 </body>
