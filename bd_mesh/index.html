@@ -47,21 +47,48 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
     infoBox: false,
     selectionIndicator: false,
 
+    requestRenderMode: true,
+
 });
+
+viewer.scene.globe.show = false;
+
+viewer.scene.msaaSamples = 8;
+
+viewer.scene.postProcessStages.fxaa.enabled = true;
+
+viewer.resolutionScale = window.devicePixelRatio;
 
 async function loadTiles() {
 
     try {
 
         const tileset = await Cesium.Cesium3DTileset.fromUrl(
-            "./tileset.json"
+            "./tileset.json",
+            {
+
+                maximumScreenSpaceError: 1,
+
+                skipLevelOfDetail: false,
+
+                immediatelyLoadDesiredLevelOfDetail: true,
+
+                loadSiblings: true,
+
+                cullWithChildrenBounds: false,
+
+                dynamicScreenSpaceError: false,
+
+            }
         );
+
+        tileset.maximumMemoryUsage = 8192;
 
         viewer.scene.primitives.add(tileset);
 
         await viewer.zoomTo(tileset);
 
-        console.log("Tileset loaded successfully");
+        console.log("Highest quality tileset loaded successfully");
 
     } catch (error) {
 
