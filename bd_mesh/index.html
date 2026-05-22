@@ -65,22 +65,23 @@
 
   const viewer = new Cesium.Viewer("cesiumContainer", {
 
-    terrain: Cesium.Terrain.fromWorldTerrain(),
+  terrain: Cesium.Terrain.fromWorldTerrain(),
 
-    animation: false,
-    timeline: false,
-    geocoder: false,
-    homeButton: true,
-    sceneModePicker: true,
-    baseLayerPicker: true,
-    navigationHelpButton: false,
-    fullscreenButton: true,
+  // REMOVE UI BUTTONS
+  animation: false,
+  timeline: false,
+  geocoder: false,
+  homeButton: false,
+  sceneModePicker: false,
+  baseLayerPicker: false,
+  navigationHelpButton: false,
+  fullscreenButton: false,
 
-    infoBox: false,
-    selectionIndicator: false,
+  infoBox: false,
+  selectionIndicator: false,
 
-    shadows: false
-  });
+  shadows: false
+});
 
   // Better rendering quality
   viewer.scene.postProcessStages.fxaa.enabled = true;
